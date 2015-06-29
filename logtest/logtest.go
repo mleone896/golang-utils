@@ -2,14 +2,17 @@ package main
 
 import (
 	"log"
+	"os"
 	"time"
 )
+
+var progName = os.Args[0]
 
 func loopAndPrint(count int) {
 
 	for {
 
-		log.Printf("Im just sitting here looping at %d\n", count)
+		log.Printf("%s Im just sitting here looping at %d\n", progName, count)
 		count++
 		time.Sleep(2 * time.Second)
 		loopAndPrint(count)
