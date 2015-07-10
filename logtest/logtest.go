@@ -12,7 +12,7 @@ func loopAndPrint(count int) {
 
 	for {
 
-		log.Printf("%s Im just sitting here looping at %d\n", progName, count)
+		log.Printf("%s Im just sitting here looping at %d just to confirm fluentd picks up any container\n", progName, count)
 		count++
 		time.Sleep(2 * time.Second)
 		loopAndPrint(count)

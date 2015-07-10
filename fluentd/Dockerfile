@@ -1,5 +1,5 @@
 FROM kiyoto/fluentd:0.10.56-2.1.1
-MAINTAINER ml@me.lo 
+MAINTAINER ml@me.lo
 RUN mkdir /etc/fluent
 ADD fluent.conf /etc/fluent/
 RUN ["/usr/local/bin/gem", "install", "fluent-plugin-record-reformer", "--no-rdoc", "--no-ri"]
