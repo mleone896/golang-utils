@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"regexp"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -44,6 +46,10 @@ func main() {
 	// exporting the AWS_REGION environment variable
 	svc := ec2.New(&aws.Config{Region: "us-west-2"})
 
+	// set a timetout
+
+	timeout := time.After(5 * time.Second)
+
 	// Call the DescribeInstances Operation
 	resp, err := svc.DescribeInstances(nil)
 	if err != nil {
@@ -57,9 +63,13 @@ func main() {
 	for {
 		select {
 		case result := <-r:
-			if result == "stopped" {
+			matched, _ := regexp.MatchString("stopped", result)
+			if matched {
 				fmt.Printf("Trannsisioned to %v taking some actions \n", result)
 			}
+		case <-timeout:
+			fmt.Println("You took too long")
+			return
 		}
 	}
 
