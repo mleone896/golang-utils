@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"time"
 
@@ -40,26 +41,22 @@ func iterateResToMap(resp *ec2.DescribeInstancesOutput) map[string]string {
 	return insMap
 }
 
-func main() {
-	// Create an EC2 service object in the "us-west-2" region
-	// Note that you can also configure your region globally by
-	// exporting the AWS_REGION environment variable
-	svc := ec2.New(&aws.Config{Region: "us-west-2"})
-
-	// set a timetout
-
-	timeout := time.After(5 * time.Second)
-
+func startLoop(svc *ec2.EC2) bool {
 	// Call the DescribeInstances Operation
 	resp, err := svc.DescribeInstances(nil)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	// re-format to method call
 	newMap := iterateResToMap(resp)
 
 	r := recieveStatus(newMap)
 
+	// set a timeout for the channel
+	timeout := time.After(5 * time.Second)
+
+	// begin channel operations
+	// TODO: this should have interfaces and structs and a poller
 	for {
 		select {
 		case result := <-r:
@@ -69,7 +66,27 @@ func main() {
 			}
 		case <-timeout:
 			fmt.Println("You took too long")
-			return
+			return false
+		}
+	}
+
+}
+
+func main() {
+	// Create an EC2 service object in the "us-west-2" region
+	// Note that you can also configure your region globally by
+	// exporting the AWS_REGION environment variable
+	svc := ec2.New(&aws.Config{Region: "us-west-2"})
+
+	/* here is where the crazyness happens
+	   we sit in a for loop waiting to hit timetout of the channel
+	   if we do we will start again (hoopefully getting new data)
+	*/
+
+	for {
+		if startLoop(svc) {
+			fmt.Println("starting up again")
+			startLoop(svc)
 		}
 	}
 
