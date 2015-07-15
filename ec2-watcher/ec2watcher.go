@@ -11,6 +11,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
+type Conn struct {
+	aw2 *ec2.EC2
+}
+
 func recieveStatus(dataMap map[string]string) <-chan string {
 
 	c := make(chan string)
@@ -24,7 +28,7 @@ func recieveStatus(dataMap map[string]string) <-chan string {
 
 }
 
-func iterateResToMap(resp *ec2.DescribeInstancesOutput) map[string]string {
+func (c *Conn) iterateResToMap(resp *ec2.DescribeInstancesOutput) map[string]string {
 	insMap := make(map[string]string)
 	fmt.Println("> Number of reservation sets: ", len(resp.Reservations))
 	for idx, _ := range resp.Reservations {
@@ -42,14 +46,14 @@ func iterateResToMap(resp *ec2.DescribeInstancesOutput) map[string]string {
 	return insMap
 }
 
-func startLoop(svc *ec2.EC2) bool {
+func (c *Conn) startLoop() bool {
 	// Call the DescribeInstances Operation
-	resp, err := svc.DescribeInstances(nil)
+	resp, err := c.aw2.DescribeInstances(nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 	// re-format to method call
-	newMap := iterateResToMap(resp)
+	newMap := c.iterateResToMap(resp)
 
 	r := recieveStatus(newMap)
 
@@ -76,11 +80,18 @@ func startLoop(svc *ec2.EC2) bool {
 
 }
 
+func NewEc2() *Conn {
+	c := new(Conn)
+	c.aw2 = ec2.New(&aws.Config{Region: "us-west-2"})
+
+	return c
+}
+
 func main() {
 	// Create an EC2 service object in the "us-west-2" region
 	// Note that you can also configure your region globally by
 	// exporting the AWS_REGION environment variable
-	svc := ec2.New(&aws.Config{Region: "us-west-2"})
+	c := NewEc2()
 
 	/* here is where the crazyness happens
 	   we sit in a for loop waiting to hit timetout of the channel
@@ -88,9 +99,9 @@ func main() {
 	*/
 
 	for {
-		if startLoop(svc) {
+		if c.startLoop() {
 			fmt.Println("starting up again")
-			startLoop(svc)
+			c.startLoop()
 		}
 	}
 
