@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -62,7 +63,10 @@ func startLoop(svc *ec2.EC2) bool {
 		case result := <-r:
 			matched, _ := regexp.MatchString("stopped", result)
 			if matched {
-				fmt.Printf("Trannsisioned to %v taking some actions \n", result)
+				res := strings.Split(result, ":")
+				status := res[0]
+				ip := res[1]
+				fmt.Printf("Trannsisioned to %v taking some actions for %v  \n", status, ip)
 			}
 		case <-timeout:
 			fmt.Println("You took too long")
