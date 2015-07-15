@@ -15,6 +15,14 @@ type Conn struct {
 	aw2 *ec2.EC2
 }
 
+// create a struct to map toml config file
+
+type AwsConfig struct {
+	AwsSecretKey string `toml:"AWS_ACCESS_KEY_ID"`
+	AwsAccessKey string `toml:"AWS_SECRET_ACCESS_KEY"`
+	Region       string `toml:"AWS_REGION"`
+}
+
 func recieveStatus(dataMap map[string]string) <-chan string {
 
 	c := make(chan string)
