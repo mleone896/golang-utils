@@ -38,7 +38,6 @@ func recieveStatus(dataMap map[string]string) <-chan string {
 
 func (c *Conn) iterateResToMap(resp *ec2.DescribeInstancesOutput) map[string]string {
 	insMap := make(map[string]string)
-	fmt.Println("> Number of reservation sets: ", len(resp.Reservations))
 	for idx, _ := range resp.Reservations {
 		for _, inst := range resp.Reservations[idx].Instances {
 			// fmt.Printf("   Instance State: %v InstanceID: %v \n", *inst.State.Name, *inst.InstanceID)
@@ -77,10 +76,9 @@ func (c *Conn) startLoop() bool {
 			if matched {
 				res := strings.Split(result, ":")
 				status, ip := res[0], res[1]
-				fmt.Printf("Trannsisioned to %v taking some actions for %v  \n", status, ip)
+				fmt.Printf("Status:  %v PrivateIP:  %v  \n", status, ip)
 			}
 		case <-timeout:
-			fmt.Println("You took too long")
 			return false
 		}
 	}
