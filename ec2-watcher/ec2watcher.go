@@ -76,8 +76,7 @@ func (c *Conn) startLoop() bool {
 			matched, _ := regexp.MatchString("stopped", result)
 			if matched {
 				res := strings.Split(result, ":")
-				status := res[0]
-				ip := res[1]
+				status, ip := res[0], res[1]
 				fmt.Printf("Trannsisioned to %v taking some actions for %v  \n", status, ip)
 			}
 		case <-timeout:
